@@ -1,0 +1,553 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>CliffordMeece.com | Professional IT Consultant</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://cliffordmeece.com/blogapi/rsd" />
+
+<link rel="alternate" type="application/rss+xml" title="CliffordMeece.com RSS" href="http://cliffordmeece.com/rss.xml" />
+
+<link rel="shortcut icon" href="/sites/default/files/favicon.ico" type="image/x-icon" />
+		<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/admin_menu/admin_menu.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/views/css/views.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/aggregator/aggregator.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/book/book.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/node/node.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/system/defaults.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/system/system.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/system/system-menus.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/modules/user/user.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/cck/theme/content-module.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/colophon/colophon.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/quotes/quotes.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/syntaxhighlighter/syntaxhighlighter/styles/shCore.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/syntaxhighlighter/syntaxhighlighter/styles/shThemeDefault.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/modules/addthis/addthis.css?B" />
+<link type="text/css" rel="stylesheet" media="all" href="/sites/all/themes/inove3/style.css?B" />
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+
+	    addthis_pub = 'meecect';
+	    addthis_logo = 'http://cliffordmeece.com/sites/default/files/logo.png';
+	    addthis_logo_background = 'EFEFFF';
+	    addthis_logo_color = '666699';
+	    addthis_brand = 'CliffordMeece.com';
+	    addthis_options = 'favorites, email, digg, delicious, slashdot, facebook, google, live, twitter,linkedin,stumbleupon, more';
+	
+//--><!]]>
+</script>
+<script src="js/processing.js"></script>
+<script src="js/init.js"></script>
+<!--[if IE]>
+<style type="text/css" media="screen">@import "/sites/all/themes/inove3/ie.css";</style>
+<![endif]-->
+	</head>
+	<script src="js/processing.js"></script>
+	<script src="js/init.js"></script>
+</head>
+
+<body bgcolor=#cccccc>
+  <script type="application/processing">
+    float bx;
+    float by;
+    int rh;
+    int rw;
+    boolean bover = false;
+    boolean locked = false;
+    float bdifx = 0.0; 
+    float bdify = 0.0; 
+    ArrayList node;
+    int num;
+    color c1 = color(228,88,255);
+    color c2 = color(0,237,177);
+    spacing=10;
+    plusRadius=12;
+    controlDistance=20;
+    Node selectedNode;
+    canvasClicked = false;
+
+    void setup(){
+      size(800, 400);
+      bx = width/2.0;
+      by = height/2.0;
+      rh=20;
+      rw=40;
+      num = 12;
+      frameRate(24);
+      nodes = new ArrayList();
+      int hsize = 10;
+      // parent node
+      nodes.add(new Node(width/2, height/2, 40, c1, null)); 
+      for(int i=1; i<num; i++) {
+        if (i<6) {
+          nodes.add(new Node(width/2+100, height/2+(i-3)*25, 60, c1, nodes.get(0))); 
+        } else {
+          nodes.add(new Node(width/2-100, height/2+(i-8)*25, 60, c2, nodes.get(0)));  
+        }
+      }
+    }
+
+    void draw() { 
+      background(255);
+      for(int i=0; i<=nodes.size()-1; i++) {
+        nodes.get(i).update();
+        nodes.get(i).display();
+      }
+    }
+    
+    // Draw the box
+    void drawRootNode(int bx, int by, int bs, int bs){
+      strokeWeight(3); 
+      stroke(50,50,50);
+      // Test if the cursor is over the box 
+      if (mouseX > bx-bs && mouseX < bx+bs && 
+          mouseY > by-bs && mouseY < by+bs) {
+        bover = true;
+       if(!locked) { 
+          fill(181,213,255);
+        } 
+      } else {
+        fill(255);
+          bover = false;
+      }
+      fill(192);
+      stroke(64);
+      roundRect(bx, by,80,30,10,10);
+      // put in text 
+      if (!isRight) {
+        text("Mind Map", x-size+5, y-5);
+      }
+      else {
+        text("Mind Map", x+5, y-5);      
+      }
+    }
+
+    void mouseReleased() {
+      for(int i=0; i<=nodes.size()-1; i++) {
+        nodes.get(i).release();
+      }
+    }
+
+    void deselectAll() {
+      for(int i=0; i<=nodes.size()-1; i++) {
+        nodes.get(i).isSelected=false;
+      }
+    }
+
+  
+    class Node {
+      int x, y;
+      int oldX, oldY;
+      int relX,relY;
+      int boxx, boxy;
+      int size;
+      int lineWeight;
+      color myColor;
+      boolean isOver;
+      boolean isOverPlus;
+      
+      boolean isPressed=false;
+      boolean isPressedPlus=false;
+      
+      boolean locked = false;
+      boolean otherslocked = false;
+      
+      boolean isSelected = false;
+      
+      boolean isEditing = false;
+      boolean isRight;
+      ArrayList children;
+      Node parent;
+      string Data;
+
+      Node(int ix, int iy, int is, color icolor, Node iparent){
+        x = ix;
+        y = iy;
+        oldX = ix;
+        oldY = iy;
+        relX = null;
+        relY = null;
+        size = is;
+        myColor = icolor;
+        parent = iparent;
+        children = new ArrayList();
+        lineWeight=5;
+        if (iparent !=null) {
+          if (parent.parent==null) {
+            if (x>parent.x) {
+              isRight=true;
+            } else {
+                isRight=false;
+            }
+          } else {
+            isRight = parent.isRight;
+          }
+        } else {
+          isRight= null;
+        }
+      }
+
+      void update() {
+        for(int i=0; i<nodes.size(); i++) {
+          if(nodes.get(i).locked == true) {
+            otherslocked = true;
+            break;
+          } else {
+            otherslocked = false;
+          }  
+        }
+
+        if(otherslocked == false) {
+          over();
+          press();
+        }
+        if(isPressed) {
+          if (relX == null) {
+            relX = mouseX - oldX;
+          }
+          if (relY == null) {
+            relY = mouseY - oldY;
+          }
+          // move all children
+          if (mouseX-relX > 0 || mouseY-relY > 0){
+            x=mouseX-relX;
+            y=mouseY-relY;
+            for (int i = 0;i <= children.size()-1; i++) {
+              children.get(i).move(mouseX-oldX-relX,mouseY-oldY-relY);
+            }
+            // see if tree needs to be flipped
+            if (parent.parent == null){
+            if (isRight && mouseX < width/2) {
+               relX=0-relX;
+              changeDirection();
+             } 
+            if (!isRight && mouseX > width/2) {
+              relX=0-relX;
+              changeDirection();
+            }
+          }
+          }
+          isPressedPlus=false;
+        }
+        if (isPressedPlus) {
+            deselectAll();
+            bezierBranch(x,y, mouseX,mouseY,myColor,size);
+        }
+      }
+
+      void changeDirection() {
+        if(isRight){
+          isRight=false;
+          for (int i = 0;i <= children.size()-1; i++) {
+            children.get(i).x = x;
+            //children.get(i).oldX = width/2-(children.get(i).oldX-width/2);
+            children.get(i).changeDirection();
+          }
+        } else {
+          isRight=true;
+          for (int i = 0;i <= children.size()-1; i++) {
+            children.get(i).x = x;
+            //children.get(i).oldX = x+2*(width/2-x);
+            children.get(i).changeDirection();
+          }
+        }
+      }
+
+      void move(int deltaX, int deltaY){
+        x=oldX+deltaX;
+        y=oldY+deltaY;
+        for (int i = 0;i <= children.size()-1; i++) {
+          children.get(i).move(deltaX,deltaY);
+        }
+      }
+
+      void over() {
+        if (!isRight){
+          if(overRect(x-size, y-10, size, 10)) {
+            isOver = true;
+            isOverPlus = false;
+          } else if(overCircle(x-size-10, y-5, 10, 10)){
+            isOver = false;
+            isOverPlus = true;
+          } else {
+            isOver = false;
+            isOverPlus = false;              
+          }
+        }
+        else {
+          if(overRect(x, y-10, size, 10)) {
+            isOver = true;
+            isOverPlus = false;
+          } else if (overCircle(x+size+5, y-5, 10, 10)) {
+              isOver = false;
+              isOverPlus = true;
+          } else {
+              isOver = false;
+              isOverPlus = false;              
+          }
+        }
+      }
+
+      void press() {
+        if(isOver && mousePressed || locked) {
+          isPressed = true;
+          isPressedPlus=false;
+          deselectAll();
+          doSelect();
+          locked = true;
+        } else {
+          isPressed = false;
+          isPressedPlus=false;
+        }
+        if(isOverPlus && mousePressed || locked) {
+          isPressedPlus = true;
+          locked = true;
+        } else {
+          isPressedPlus = false;
+        }
+      }
+
+      void doSelect() {
+        isSelected=true;
+        for (int i = 0;i <= children.size()-1; i++) {
+          children.get(i).doSelect();
+        }
+      }
+
+      void doEdit() {
+        isEditable=true;
+        drawAsEditing();
+      }
+
+      void release() {
+        if (parent !=null) {
+          locked = false;
+          if (isPressedPlus) {
+            newNode=new Node(mouseX,mouseY,60, myColor, this);
+            children.add(newNode);
+            nodes.add(newNode);
+            newNode.doEdit();
+          }
+          isPressedPlus=false;
+          oldX=x;
+          oldY=y;
+          relX = null;
+          relY = null;
+        }
+      }
+
+      void drawAsSelected() {
+        rectMode(CORNER);
+        fill(181,213,255);
+        strokeWeight(1);
+        stroke(181,213,255);
+        if (!isRight) {
+          roundRect(x-size, y-15-lineWeight/2, size, 15,5,5);
+        }
+        else {
+          roundRect(x, y-15-lineWeight/2, size, 15, 5,5);    
+        }
+        drawData();
+      }
+
+      void drawAsEditing() {
+        stroke(181,213,255);
+        rectMode(CORNER);
+        fill(255,255,255);
+        if (!isRight) {
+          rect(x-size-5, y-20-lineWeight/2, size+10, 20);
+        }
+        else {
+          rect(x-5, y-20-lineWeight/2, size+10, 20);    
+        }
+        drawData();
+      }
+
+      void drawData() {
+        fill(0,0,0);
+        if (!isRight) {
+          text("New Node", x-size+5, y-5);
+        }
+        else {
+          text("New Node", x+5, y-5);
+        }  
+      }
+
+      void drawRootNode() {
+        fill(255);
+        stroke(64);
+        roundRect(bx-40, by-15,80,30,10,10);
+        fill(0);
+        stroke(0);
+        text("Mind Map", x-size+5, y);
+      }
+
+      void bezierBranch(int x, int y, int x2, int y2, color branchColor, int mySize) {
+        noFill();
+        strokeWeight(3);
+        stroke(branchColor);
+        myDistance=controlDistance;
+
+        if(!isRight) {
+          bezier(x-mySize,y, x-mySize-myDistance, y, x2+controlDistance, y2, x2,y2);
+          line(x2,y2, x2-size,y2);
+        } else {
+          bezier(x+mySize, y, x + mySize + myDistance, y, x2-controlDistance, y2, x2,y2);
+          line(x2,y2, x2+size,y2);
+        }
+      }
+
+      void display() {
+        if (parent != null) {
+          bezierBranch(parent.x,parent.y, x,y, myColor,parent.size);
+          drawData(); 
+          if(isOver || isPressed || isOverPlus || isPressedPlus) {
+            drawPlus();
+          }      
+          //if(isPressed) {
+          //  drawAsSelected();
+          //}
+          if(isSelected) {
+            drawAsSelected();
+          }
+        } else {
+            drawRootNode();
+        }
+      }
+                
+      void drawPlus () {
+        strokeWeight(1);
+        fill(255);
+        stroke(128,128,128);
+        if (!isRight) {
+          ellipse(x-size-spacing,y,plusRadius,plusRadius);
+          line(x-size-spacing-plusRadius/2+2, y, x-size-spacing+plusRadius/2-2, y);
+          line(x-size-spacing, y-plusRadius/2+2, x-size-spacing, y+plusRadius/2-2);
+        }
+        else {
+          ellipse(x+size+spacing,y,plusRadius,plusRadius);
+          line(x+size+spacing-plusRadius/2+2, y, x+size+spacing+plusRadius/2-2, y);
+          line(x+size+spacing, y-plusRadius/2+2, x+size+spacing, y+plusRadius/2-2);
+        }
+      }
+    }
+
+    boolean overRect(int x, int y, int width, int height) {
+      if (mouseX >= x && mouseX <= x+width && 
+          mouseY <= y+height && mouseY >= y-height) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    boolean overCircle(int x, int y, int width, int height) {
+      if (mouseX >= x && mouseX <= x+width && 
+          mouseY <= y+height && mouseY >= y-height) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    int lock(int val, int minv, int maxv) { 
+      return  min(max(val, minv), maxv); 
+    }
+    
+    void roundRect(float x, float y, float w, float h, float xr, float yr) {
+      arc(x+w-xr, y+yr, 2*xr, 2*yr, TWO_PI-PI/2, TWO_PI);
+      arc(x+w-xr, y+h-yr, 2*xr, 2*yr, 0,PI/2);
+      arc(x+xr, y+h-yr, 2*xr, 2*yr, PI/2, PI);
+      arc(x+xr, y+yr, 2*xr, 2*yr, PI, TWO_PI-PI/2);
+      line(x+xr,y,x+w-xr,y);
+      line(x+xr,y+h,x+w-xr,y+h);
+      line(x,y+yr,x,y+h-2*yr);
+      line(x+w,y+yr,x+w,y+h-2*yr);
+      noStroke();
+      rect(x+xr, y, w-2*xr, h);
+      rect(x,y+yr,xr,h-2*yr);
+      rect(x+w-xr,y+yr,xr,h-2*yr);
+    }
+
+  </script>
+
+  <!--[if IE]><div id="IEroot"><![endif]-->
+  	<!-- wrap starts here -->
+  		<div id="wrap">
+  			<div id="container">
+  				<div id="header">
+  					<div id="header-inner">
+      				    					<div id="logo-title">
+        				      					<div id="logo"><a href="/" title="Home" rel="home"><img src="/sites/default/files/logo.png" alt="Home" id="logo-image" /></a> </div>
+        				      				    					</div>
+      					    					    						<div id="site-slogan">Professional IT Consultant</div>
+      											</div>
+      <!-- navigation -->
+    <div id="navigation">
+     <ul id="menus"><li class="menu-542 active-trail first active"><a href="/" title="" class="active">Home</a></li>
+  <li class="menu-831"><a href="/content/about-me" title="About Me">About</a></li>
+  <li class="menu-944"><a href="/content/services" title="Services">Services</a></li>
+  <li class="menu-933"><a href="/content/resume" title="">Resume</a></li>
+  <li class="menu-945"><a href="/content/portfolio" title="Portfolio">Portfolio</a></li>
+  <li class="menu-985"><a href="http://gallery.me.com/clifford.meece" title="My mobileMe photo/video gallery">Gallery</a></li>
+  <li class="menu-830 last"><a href="/content/contact-details" title="Detailed list of methods to contact me.">Contact</a></li>
+  </ul>
+      <div id="searchbox"> <form action="/"  accept-charset="UTF-8" method="post" id="search-theme-form">
+  <div>
+  <div id="search" class="container-inline">
+    <div class="form-item" id="edit-search-theme-form-1-wrapper">
+   <label for="edit-search-theme-form-1"> </label>
+   <input type="text" maxlength="128" name="search_theme_form" id="edit-search-theme-form-1" size="15" value="" title="Enter the terms you wish to search for." class="form-text" />
+  </div>
+  <input type="submit" name="op" id="edit-submit" value="Search"  class="form-submit" />
+  <input type="hidden" name="form_build_id" id="form-8c5777cdef0c144fac463ef268a8ccd5" value="form-8c5777cdef0c144fac463ef268a8ccd5"  />
+  <input type="hidden" name="form_token" id="edit-search-theme-form-form-token" value="5833a344792b7419b0e2ad68f467af7e"  />
+  <input type="hidden" name="form_id" id="edit-search-theme-form" value="search_theme_form"  />
+  </div>
+  </div></form>
+   </div>
+      <!-- navigation END -->
+    </div>
+    </div>
+    <!-- content starts here -->
+    <div id="content">
+      <div id="main"> 
+<canvas width="400" height="400"></canvas></p>
+<ul>              
+  <li class="addthis last"><span>
+        <a href="http://www.addthis.com/bookmark.php"
+          onmouseover="return addthis_open(this, '', 'http://cliffordmeece.com/content/processingjs-mindmap-example', 'Processing.js Mindmap Example')"
+          onmouseout="addthis_close()"
+          onclick="return addthis_sendto()"><img src="http://s9.addthis.com/button1-share.gif" width="125" height="16" alt="" /></a>
+        <script type="text/javascript" src="http://s7.addthis.com/js/152/addthis_widget.js"></script>
+        </span></li>
+  </ul>    
+            <div class="taxonomy">
+          <ul class="links inline"><li class="taxonomy_term_18 first"><a href="/categories/dendrite" rel="tag" title="">Dendrite</a></li>
+  <li class="taxonomy_term_16"><a href="/categories/mindmap" rel="tag" title="">Mindmap</a></li>
+  <li class="taxonomy_term_3"><a href="/categories/portfolio" rel="tag" title="">Portfolio</a></li>
+  <li class="taxonomy_term_15"><a href="/categories/processingjs" rel="tag" title="">processing.js</a></li>
+  <li class="taxonomy_term_17"><a href="/categories/programming" rel="tag" title="">Programming</a></li>
+  <li class="taxonomy_term_2 last"><a href="/categories/projects" rel="tag" title="">Projects</a></li>
+  </ul>      </div>
+        </div>
+  </div>
+
+  </div>   </div>
+  </div>
+    </div>
+      <div class="clear"> </div>
+      <!-- end main -->
+      <!--footer starts here-->
+      <div id="footer"> <a id="gotop" href="#">Top</a>
+                  <a href="http://www.linkedin.com/in/cliffordmeece"><img src="/sites/default/files/pictures/linkedin.png" border="0" alt="View Clifford Meece&#039;s profile on LinkedIn"></a>
+  <a href="http://twitter.com/cliffordmeece"><img src="/sites/default/files/pictures/twitter.png" border="0" alt="View Clifford Meece&#039;s profile on LinkedIn"></a>
+  <a href="http://www.facebook.com/people/Clifford-T-Meece/1356145744"><img src="/sites/default/files/pictures/facebook.png" border="0" alt="View Clifford Meece&#039;s profile on Facebook"></a> <br>
+
+      </div>
+      <!-- container ends here -->
+    </div>
+    <!-- wrap ends here -->
+  </div> 
+  </html>

@@ -1,0 +1,7 @@
+s is a very basic and simple mindmapping tool written in javascript and processing.js
+
+It is very incomplete, but can be used as a base for more work.
+
+Please see the following blog entry for detail and a live demo:
+
+http://cliffordmeece.com/content/processingjs-mindmap-example
